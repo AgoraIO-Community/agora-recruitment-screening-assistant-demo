@@ -45,7 +45,7 @@ Use Node.js 24 from .nvmrc and pnpm 9.15.9. Install with pnpm install --frozen-l
 - Keep startup independent of business state. No business tools, saved results or persistent customer/learner history are available. Business API routes are not provided.
 - NEXT_PUBLIC_AGORA_APP_ID is public and required at build/runtime. Keep NEXT_AGORA_APP_CERTIFICATE and optional vendor keys server-only. Never log, commit or screenshot credentials.
 - Sample token/start/stop endpoints are not production login or abuse controls. Provider retention is external to this source. Keep missing measurements unknown and Inspector outcomes manual.
-- Keep Inspector, Build, adopted UIkit source, source/font licenses and Docker support.
+- Keep Inspector, Build, adopted UIkit source, source licenses and Docker support.
 
 ## Prompt behavior contract — 2026-11-05
 
@@ -94,3 +94,7 @@ Local implementation does not authorize a commit. A commit does not authorize a 
 ## Usage FAQ contract
 
 Keep FAQ in the upper-right header beside Inspector and Build. `components/ScenarioFaq.tsx` and `styles/faq.css` follow the Voice Shopping drawer pattern: closed on entry, right-side on desktop, full-width on mobile, internally scrollable, and keyboard accessible. Opening FAQ must not start a session or request microphone access. Keep answers consistent with this scenario’s conversation-only scope. Preserve the coach Phrasebook where present.
+
+## Typography
+
+Use the installed Helvetica Neue/sans-serif fallback and keep the shared font tokens consistent with global/form-control styles. Do not bundle or download font assets. Preserve UI source attribution and other third-party notices. Check desktop/mobile rendering after typography changes.
