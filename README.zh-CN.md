@@ -2,6 +2,8 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 
+本文仅翻译文档；应用界面和语音对话仍使用英语。请使用下方英文示例试说，中文仅供理解。
+
 基于 Agora 和 Next.js 的招聘初筛语音 AI 演示。体验示例支持工程师面试、回答追问，并请助手总结你的回答。
 
 **[在 Agora Recipes 探索更多语音 AI 演示 →](https://recipes.agora.io/)**
