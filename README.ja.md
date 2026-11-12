@@ -6,6 +6,8 @@
 
 Agora と Next.js で構築した採用スクリーニングの音声 AI デモです。サポートエンジニア職の面接例を試し、追加質問に回答して、回答の要約を依頼できます。
 
+**[デモを試す →](https://agora-recruitment-screening-assista.vercel.app)**
+
 **[Agora Recipes で音声 AI デモをもっと探す →](https://recipes.agora.io/)**
 
 [![Agora](https://img.shields.io/badge/Voice_AI-Agora-099DFD)](https://www.agora.io/en/products/conversational-ai-engine/)
@@ -79,6 +81,8 @@ pnpm run dev
 ```
 
 [http://localhost:3000](http://localhost:3000) を開き、**Start screening interview** を選んでマイクの使用を許可します。必要に応じて要約を依頼し、終了ボタン（**End session**）で通話を終えます。
+
+各セッションは10分後に自動終了します。続けるには Start again を選択してください。
 
 <a id="deployment"></a>
 

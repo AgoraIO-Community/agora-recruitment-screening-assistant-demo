@@ -66,11 +66,16 @@ const AgoraProvider = dynamic(
   { ssr: false },
 );
 
+const SESSION_LIMIT_MS = 10 * 60 * 1000;
+
 export default function LandingPage() {
   const [showConversation, setShowConversation] = useState(false);
   const ui = useScenarioUi();
+  const endSession = ui.end;
+  const [endedByTimeout, setEndedByTimeout] = useState(false);
+  const [sessionTimeRemaining, setSessionTimeRemaining] = useState(SESSION_LIMIT_MS / 1000);
   const [ending, setEnding] = useState(false);
-  const endPending = useRef(false);
+  const stopInFlight = useRef(false);
 
   // Preload heavy modules on mount so they're already cached when the user
   // clicks "Try it Now" — eliminates the ~1.8s dynamic-import delay.
@@ -85,6 +90,9 @@ export default function LandingPage() {
   const [agentJoinError, setAgentJoinError] = useState(false);
 
   const handleStartConversation = async () => {
+    if (isLoading || showConversation) return;
+    setEndedByTimeout(false);
+    setSessionTimeRemaining(SESSION_LIMIT_MS / 1000);
     setIsLoading(true);
     ui.start();
     setError(null);
@@ -192,48 +200,77 @@ export default function LandingPage() {
     [agoraData],
   );
 
-  const handleEndConversation = async () => {
-    if (endPending.current) return;
-    endPending.current = true;
+  const handleEndConversation = useCallback(async () => {
+    if (stopInFlight.current) return;
+    stopInFlight.current = true;
     setEnding(true);
+    setError(null);
     try {
-      // Stop the AI agent
       if (agoraData?.agentId) {
-        try {
-          // console.log('Stopping agent:', agoraData.agentId);
-          const response = await fetch('/api/stop-conversation', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ agent_id: agoraData.agentId }),
-          });
-          if (!response.ok) {
-            console.error('Failed to stop agent:', await response.text());
-          }
-          // else console.log('Agent stopped successfully');
-        } catch (error) {
-          console.error('Error stopping agent:', error);
-        }
+        const response = await fetch('/api/stop-conversation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agent_id: agoraData.agentId }),
+        });
+        const result = await response.json();
+        if (!response.ok || result.success !== true)
+          throw new Error('Agent stop failed');
       }
-
-      // Tear down RTM — owned here since we created it here
-      rtmClient?.logout().catch((err) => console.error('RTM logout error:', err));
+      await rtmClient
+        ?.logout()
+        .catch((err) => console.error('RTM logout error:', err));
       setRtmClient(null);
+      setAgoraData(null);
       setShowConversation(false);
-      ui.end();
+      setEndedByTimeout(
+        agoraData?.startedAt != null &&
+          Date.now() >= agoraData.startedAt + SESSION_LIMIT_MS,
+      );
+      endSession();
+    } catch (err) {
+      console.error('Error ending voice session:', err);
+      setError(
+        'Could not end the conversation. Your session is still open. Try ending it again.',
+      );
     } finally {
-      endPending.current = false;
+      stopInFlight.current = false;
       setEnding(false);
     }
-  };
+  }, [agoraData, rtmClient, endSession]);
+
+  useEffect(() => {
+    if (!showConversation || agoraData?.startedAt == null) return;
+
+    const deadline = agoraData.startedAt + SESSION_LIMIT_MS;
+    let nextAttemptAt = deadline;
+    const checkDeadline = () => {
+      const now = Date.now();
+      setSessionTimeRemaining(Math.max(0, Math.ceil((deadline - now) / 1000)));
+      if (now < nextAttemptAt || stopInFlight.current) return;
+      // Retry failed stops without flooding the endpoint. Wall time also
+      // catches overdue sessions when a background tab becomes active again.
+      nextAttemptAt = now + 5000;
+      void handleEndConversation();
+    };
+    const timer = window.setInterval(checkDeadline, 1000);
+    document.addEventListener('visibilitychange', checkDeadline);
+    window.addEventListener('focus', checkDeadline);
+    checkDeadline();
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', checkDeadline);
+      window.removeEventListener('focus', checkDeadline);
+    };
+  }, [showConversation, agoraData, handleEndConversation]);
 
   return (
-    <ScenarioShell ui={ui} active={showConversation} loading={isLoading} error={error} disabled={false} onStart={handleStartConversation}
+    <ScenarioShell ui={ui} active={showConversation} loading={isLoading} error={error} disabled={false} onStart={handleStartConversation} endedByTimeout={endedByTimeout}
     >
       {agentJoinError && <p role="alert">The assistant could not connect. End this session and try again.</p>}
       {error && <p className="demo-workspace-fallback" role="alert">{error}</p>}
       {showConversation && agoraData && rtmClient && <Suspense fallback={<LoadingSkeleton />}><ErrorBoundary><AgoraProvider>
         <ConversationComponent agoraData={agoraData} rtmClient={rtmClient} onTokenWillExpire={handleTokenWillExpire} onEndConversation={handleEndConversation}
-          onActivityChange={ui.setActivity} onInspectionChange={ui.setInspection} ending={ending}
+          onActivityChange={ui.setActivity} onInspectionChange={ui.setInspection} ending={ending} sessionTimeRemaining={sessionTimeRemaining}
           startupError={agentJoinError ? "The assistant could not connect. End this session and try again." : undefined} />
       </AgoraProvider></ErrorBoundary></Suspense>}
     </ScenarioShell>
@@ -259,7 +296,7 @@ function useScenarioUi() {
 
 type ScenarioUi = ReturnType<typeof useScenarioUi>;
 
-function ScenarioShell({ ui, active, loading, error, disabled = false, onStart, children, business }: {
+function ScenarioShell({ ui, active, loading, error, disabled = false, onStart, children, business, endedByTimeout = false }: {
   ui: ScenarioUi;
   active: boolean;
   loading: boolean;
@@ -268,6 +305,7 @@ function ScenarioShell({ ui, active, loading, error, disabled = false, onStart, 
   onStart: () => void;
   children: ReactNode;
   business?: ReactNode;
+  endedByTimeout?: boolean;
 }) {
   const scenario = getScenarioPresentation();
   const [inspectorOpen, setInspectorOpen] = useState(false);
@@ -287,7 +325,16 @@ function ScenarioShell({ ui, active, loading, error, disabled = false, onStart, 
       <ConversationWorkspace scenario={scenario} activity={activity} inspection={inspection}>
         {active ? children : inspection.lifecycle === 'ended' ? (
           <section className="demo-session demo-session-ended">
-            <div className="demo-session-heading"><h2>Session ended.</h2></div>
+            <div className="demo-session-heading">
+              <div>
+                <h2>Session ended.</h2>
+                {endedByTimeout && (
+                  <p className="demo-note" role="status">
+                    Your 10-minute session has ended. Start again to continue.
+                  </p>
+                )}
+              </div>
+            </div>
             <ConversationPanel id="last-session-transcript" name={scenario.name} messages={inspection.messages} pending={false} voiceState="ended" className="demo-conversation" />
             <div className="demo-ended-actions">
               <Button disabled={disabled || loading} onClick={onStart}>Start again</Button>
