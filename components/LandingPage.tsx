@@ -71,6 +71,20 @@ const SESSION_LIMIT_MS = 10 * 60 * 1000;
 export default function LandingPage() {
   const [showConversation, setShowConversation] = useState(false);
   const ui = useScenarioUi();
+  const [buildOpen, setBuildOpen] = useState(false);
+  const buildTrigger = useRef<HTMLButtonElement>(null);
+
+  const openBuild: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+    buildTrigger.current = event.currentTarget;
+    setBuildOpen(true);
+  };
+
+  const restoreBuildFocus = (event: Event) => {
+    if (buildTrigger.current?.isConnected) {
+      event.preventDefault();
+      buildTrigger.current.focus();
+    }
+  };
   const endSession = ui.end;
   const [endedByTimeout, setEndedByTimeout] = useState(false);
   const [sessionTimeRemaining, setSessionTimeRemaining] = useState(SESSION_LIMIT_MS / 1000);
@@ -265,11 +279,13 @@ export default function LandingPage() {
 
   return (
     <ScenarioShell ui={ui} active={showConversation} loading={isLoading} error={error} disabled={false} onStart={handleStartConversation} endedByTimeout={endedByTimeout}
+      onBuild={openBuild} buildOpen={buildOpen} onBuildOpenChange={setBuildOpen} onCloseBuildAutoFocus={restoreBuildFocus}
     >
       {agentJoinError && <p role="alert">The assistant could not connect. End this session and try again.</p>}
       {error && <p className="demo-workspace-fallback" role="alert">{error}</p>}
       {showConversation && agoraData && rtmClient && <Suspense fallback={<LoadingSkeleton />}><ErrorBoundary><AgoraProvider>
         <ConversationComponent agoraData={agoraData} rtmClient={rtmClient} onTokenWillExpire={handleTokenWillExpire} onEndConversation={handleEndConversation}
+          onBuild={openBuild}
           onActivityChange={ui.setActivity} onInspectionChange={ui.setInspection} ending={ending} sessionTimeRemaining={sessionTimeRemaining}
           startupError={agentJoinError ? "The assistant could not connect. End this session and try again." : undefined} />
       </AgoraProvider></ErrorBoundary></Suspense>}
@@ -296,20 +312,23 @@ function useScenarioUi() {
 
 type ScenarioUi = ReturnType<typeof useScenarioUi>;
 
-function ScenarioShell({ ui, active, loading, error, disabled = false, onStart, children, business, endedByTimeout = false }: {
+function ScenarioShell({ ui, active, loading, error, disabled = false, onStart, onBuild, buildOpen, onBuildOpenChange, onCloseBuildAutoFocus, children, business, endedByTimeout = false }: {
   ui: ScenarioUi;
   active: boolean;
   loading: boolean;
   error: string | null;
   disabled?: boolean;
   onStart: () => void;
+  onBuild: React.MouseEventHandler<HTMLButtonElement>;
+  buildOpen: boolean;
+  onBuildOpenChange: (open: boolean) => void;
+  onCloseBuildAutoFocus: (event: Event) => void;
   children: ReactNode;
   business?: ReactNode;
   endedByTimeout?: boolean;
 }) {
   const scenario = getScenarioPresentation();
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [buildOpen, setBuildOpen] = useState(false);
   const activity: AgentSignalSnapshot = !active && error
     ? { state: 'error', micEnabled: false }
     : loading ? { state: 'connecting', micEnabled: false } : ui.activity;
@@ -319,7 +338,7 @@ function ScenarioShell({ ui, active, loading, error, disabled = false, onStart, 
   return (
     <div className="demo-shell">
       <Dialog>
-        <ScenarioIdentity scenario={scenario} onInspect={() => setInspectorOpen(true)} onBuild={() => setBuildOpen(true)} />
+        <ScenarioIdentity scenario={scenario} onInspect={() => setInspectorOpen(true)} />
         <ScenarioFaq />
       </Dialog>
       <ConversationWorkspace scenario={scenario} activity={activity} inspection={inspection}>
@@ -337,16 +356,17 @@ function ScenarioShell({ ui, active, loading, error, disabled = false, onStart, 
             </div>
             <ConversationPanel id="last-session-transcript" name={scenario.name} messages={inspection.messages} pending={false} voiceState="ended" className="demo-conversation" />
             <div className="demo-ended-actions">
-              <Button disabled={disabled || loading} onClick={onStart}>Start again</Button>
+              <Button variant="outline" disabled={disabled || loading} onClick={onStart}>Start again</Button>
+              <Button onClick={onBuild}>Build Now</Button>
             </div>
           </section>
         ) : (
-          <QuickstartPreCallCard scenario={scenario} isLoading={loading} disabled={disabled} error={error} onStart={onStart} />
+          <QuickstartPreCallCard scenario={scenario} isLoading={loading} disabled={disabled} error={error} onStart={onStart} onBuild={onBuild} />
         )}
       </ConversationWorkspace>
       {business ? <section className="demo-business" aria-label={`${scenario.name} details`}>{business}</section> : null}
       <ScenarioInspector scenario={scenario} snapshot={inspection} outcome={ui.outcome} onOutcomeChange={ui.setOutcome} open={inspectorOpen} onOpenChange={setInspectorOpen} />
-      <DeveloperGuide scenario={scenario} open={buildOpen} onOpenChange={setBuildOpen} />
+      <DeveloperGuide scenario={scenario} open={buildOpen} onOpenChange={onBuildOpenChange} onCloseAutoFocus={onCloseBuildAutoFocus} />
     </div>
   );
 }
