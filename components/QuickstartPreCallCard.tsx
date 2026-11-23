@@ -2,45 +2,9 @@
 
 import { Loader2, Mic } from 'lucide-react';
 import { Button } from './ui/button';
+import { BuildLink } from './BuildLink';
 import { Alert, AlertDescription } from './ui/alert';
 import type { ScenarioPresentation } from '@/lib/presentation';
-
-function ScenarioFeatures({ scenario }: { scenario: ScenarioPresentation }) {
-  return (
-    <>
-      {scenario.features.length ? (
-        <section
-          className="demo-features"
-          aria-label={scenario.featuresHeading}
-        >
-          <h3>
-            <span className="demo-feature-comparison">
-              {scenario.featuresHeading}
-            </span>
-          </h3>
-          <ul>
-            {scenario.features.map((feature) => (
-              <li key={feature.title}>
-                <span className="demo-feature-emoji" aria-hidden="true">
-                  {feature.emoji}
-                </span>
-                {feature.title}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-      <div className="demo-built-with">
-        <span>Built with</span>
-        <ul aria-label="Technology stack">
-          {scenario.builtWith.map((technology) => (
-            <li key={technology}>{technology}</li>
-          ))}
-        </ul>
-      </div>
-    </>
-  );
-}
 
 export function QuickstartPreCallCard({
   scenario,
@@ -48,25 +12,25 @@ export function QuickstartPreCallCard({
   disabled = false,
   error,
   onStart,
-  onBuild,
+  onRun,
 }: {
   scenario: ScenarioPresentation;
   isLoading: boolean;
   disabled?: boolean;
   error: string | null;
   onStart: () => void;
-  onBuild: React.MouseEventHandler<HTMLButtonElement>;
+  onRun: React.MouseEventHandler<HTMLButtonElement>;
 }) {
   return (
     <section className="demo-welcome">
       <h2>{scenario.name}</h2>
-      <p className="demo-lead">{scenario.summary}</p>
-      <ScenarioFeatures scenario={scenario} />
+      <p className="demo-lead">{scenario.lead}</p>
       <div className="demo-welcome-actions">
         <Button
           size="lg"
           disabled={isLoading || disabled}
           aria-busy={isLoading}
+          aria-describedby="demo-expectations"
           onClick={onStart}
         >
           {isLoading ? (
@@ -76,8 +40,16 @@ export function QuickstartPreCallCard({
           )}
           {isLoading ? 'Connecting…' : scenario.startLabel}
         </Button>
-        <Button size="lg" variant="outline" onClick={onBuild}>Build Now</Button>
+        <BuildLink scenario={scenario} size="lg" />
+        <button type="button" className="demo-run-link" onClick={onRun}>
+          {scenario.developer.runLabel}
+        </button>
       </div>
+      <ul id="demo-expectations" className="demo-expectations">
+        {scenario.expectations.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
       {error ? (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>

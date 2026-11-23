@@ -8,7 +8,7 @@ This guide is for coding agents making changes in `agora-recruitment-screening-a
 2. **Keep the public scenario identity visible**: the public scenario name and short purpose remain visible on desktop and mobile from first load and throughout the session. The header and main heading use the same public name. Keep internal numeric IDs out of visible page and Build copy. Activity status must not replace the scenario name.
 3. **Use our UIkit components**: adopt actual component source and accompanying theme/styles from [shczhen/agent-ui](https://github.com/shczhen/agent-ui), connected to real session data and actions. Preserve source provenance and RTC/RTM ownership.
 
-Inspect desktop/mobile direct entry, reload and inline startup failure/retry states. Confirm there is no introductory overlay and that the main start control directly starts the existing session flow. Inspect actual screenshots before acceptance. Inspector, Build and the coach phrasebook open only on explicit user actions.
+Inspect desktop/mobile direct entry, reload and inline startup failure/retry states. Confirm there is no introductory overlay and that the main start control directly starts the existing session flow. Inspect actual screenshots before acceptance. Inspector, the setup dialog and the coach phrasebook open only on explicit user actions.
 
 For transcript changes, verify desktop/mobile live text growth, hidden arrivals and showing the conversation again. Restore following only if it was active before hiding; preserve deliberate history reading and verify that Scroll to end resumes following.
 
@@ -47,7 +47,7 @@ Use Node.js 24 from .nvmrc and pnpm 9.15.9. Install with pnpm install --frozen-l
 - Keep startup independent of business state. No business tools, saved results or persistent customer/learner history are available. Business API routes are not provided.
 - NEXT_PUBLIC_AGORA_APP_ID is public and required at build/runtime. Keep NEXT_AGORA_APP_CERTIFICATE and optional vendor keys server-only. Never log, commit or screenshot credentials.
 - Sample token/start/stop endpoints are not production login or abuse controls. Provider retention is external to this source. Keep missing measurements unknown and Inspector outcomes manual.
-- Keep Inspector, Build, adopted UIkit source, source licenses and Docker support.
+- Keep Inspector, the Build link, adopted UIkit source, source licenses and Docker support.
 
 ## Prompt behavior contract — 2026-11-05
 
@@ -57,7 +57,7 @@ Answer supported questions and continue useful advice after identifying one unav
 
 ## Public presentation ownership
 
-`lib/presentation.ts` owns the single public `name`, purpose and summary. The header and main heading both render that name; `app/layout.tsx` derives browser metadata from it. There is no separate headline field. Internal IDs stay available for diagnostics and configuration, without being rendered as public identity text.
+`lib/presentation.ts` owns the single public `name`, purpose and summary. It also owns the entry copy: `lead` (one sentence), `expectations` (a few words each), `sample` (a short static exchange) and `developer.buildLabel`. Show key features through the sample conversation: tag at most three Agent lines with a feature name instead of adding a feature list. Sample questions must come from `lib/scenario-knowledge.ts`; `pnpm run verify:scenario` checks this. Keep the entry page short: one heading, one sentence, the start action, the expectations line and the sample. Entry typography, boundaries and the primary action follow the Agora Website foundation and Basic controls in [shczhen/agent-ui](https://github.com/shczhen/agent-ui): hero type role, 2px technical corners, 13px labels and the signal-color primary action. The header and main heading both render that name; `app/layout.tsx` derives browser metadata from it. There is no separate headline field. Internal IDs stay available for diagnostics and configuration, without being rendered as public identity text.
 
 ## Verification and maintenance
 
@@ -95,7 +95,7 @@ Local implementation does not authorize a commit. A commit does not authorize a 
 
 ## Usage FAQ contract
 
-Keep FAQ in the upper-right header beside Inspector. Place Build Now beside the start action, in the active voice dock and beside Start again after the session. `components/ScenarioFaq.tsx` and `styles/faq.css` follow the Voice Shopping drawer pattern: closed on entry, right-side on desktop, full-width on mobile, internally scrollable, and keyboard accessible. Opening FAQ must not start a session or request microphone access. Keep answers consistent with this scenario’s conversation-only scope. Preserve the coach Phrasebook where present.
+Keep FAQ in the upper-right header beside Inspector. Developer actions have three fixed weights. The start action is the only primary button. Build is the outline link button labeled by `developer.buildLabel` ("Build your own"); it opens `developer.signupUrl` (Agora sign-up) in a new tab. `lib/build-link.ts` adds UTM: when the page URL has a valid `utm_source`, forward the page's UTM fields as a complete set and do not fill missing fields; otherwise use `developer.buildAttribution`. Forward UTM fields only. The underlined text button labeled by `developer.runLabel` ("Run it locally") opens the setup dialog with the create command, the AI assistant prompt and the files to customize. Before a session the three actions sit in one row; during and after a session Run and Build are the last header actions. Each action appears once. Keep them out of the voice dock. `components/ScenarioFaq.tsx` and `styles/faq.css` follow the Voice Shopping drawer pattern: closed on entry, right-side on desktop, full-width on mobile, internally scrollable, and keyboard accessible. Opening FAQ must not start a session or request microphone access. Keep answers consistent with this scenario’s conversation-only scope. Preserve the coach Phrasebook where present.
 
 ## Typography
 

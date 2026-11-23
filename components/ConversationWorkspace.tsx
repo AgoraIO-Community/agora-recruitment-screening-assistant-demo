@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { Pause, Play } from 'lucide-react';
 import { AgentSignal } from './AgentSignal';
+import { ScenarioSample } from './ScenarioSample';
 import { Button } from './ui/button';
 import { SIGNAL_COPY, type AgentSignalSnapshot } from '@/lib/agent-signal';
 import type { InspectionSnapshot } from '@/lib/inspection';
@@ -33,37 +34,49 @@ export function ConversationWorkspace({
     : activity.state === 'error'
       ? 'Open Inspector for details.'
       : '';
+  const agent = (
+    <section className="demo-agent" aria-label="Agent activity">
+      <div className="demo-agent-control">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={
+            paused ? 'Resume Agent animation' : 'Pause Agent animation'
+          }
+          aria-pressed={paused}
+          onClick={() => setPaused((value) => !value)}
+        >
+          {paused ? <Play /> : <Pause />}
+        </Button>
+      </div>
+      <AgentSignal activity={activity} paused={paused} />
+      <div
+        className={`demo-agent-copy ${ready || activity.state === 'idle' ? 'sr-only' : ''}`}
+        role="status"
+      >
+        <h2>{copy.title}</h2>
+        {description ? <p>{description}</p> : null}
+      </div>
+    </section>
+  );
   return (
     <main
       id="main-content"
       className={`demo-workspace ${ready ? 'demo-workspace-ready' : 'demo-workspace-session'}`}
     >
-      <div className="demo-main-content">{children}</div>
-      <aside className="demo-sidebar" aria-label={`${scenario.name} activity`}>
-        <section className="demo-agent" aria-label="Agent activity">
-          <div className="demo-agent-control">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={
-                paused ? 'Resume Agent animation' : 'Pause Agent animation'
-              }
-              aria-pressed={paused}
-              onClick={() => setPaused((value) => !value)}
-            >
-              {paused ? <Play /> : <Pause />}
-            </Button>
-          </div>
-          <AgentSignal activity={activity} paused={paused} />
-          <div
-            className={`demo-agent-copy ${activity.state === 'idle' ? 'sr-only' : ''}`}
-            role="status"
-          >
-            <h2>{copy.title}</h2>
-            {description ? <p>{description}</p> : null}
-          </div>
-        </section>
-      </aside>
+      <div className="demo-main-content">
+        {ready ? agent : null}
+        {children}
+      </div>
+      {ready ? (
+        <div className="demo-sidebar">
+          <ScenarioSample scenario={scenario} />
+        </div>
+      ) : (
+        <aside className="demo-sidebar" aria-label={`${scenario.name} activity`}>
+          {agent}
+        </aside>
+      )}
     </main>
   );
 }

@@ -3,15 +3,21 @@
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { Button } from './ui/button';
+import { BuildLink } from './BuildLink';
 import { DialogTrigger } from './ui/dialog';
 import type { ScenarioPresentation } from '@/lib/presentation';
 
 export function ScenarioIdentity({
   scenario,
   onInspect,
+  showBuild = false,
+  onRun,
 }: {
   scenario: ScenarioPresentation;
   onInspect: () => void;
+  /** False while the entry page shows its own Build action. */
+  showBuild?: boolean;
+  onRun: React.MouseEventHandler<HTMLButtonElement>;
 }) {
   const headerRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -77,6 +83,14 @@ export function ScenarioIdentity({
         >
           <span className="demo-tool-label">Inspector</span>
         </Button>
+        {showBuild ? (
+          <>
+            <button type="button" className="demo-run-link" onClick={onRun}>
+              {scenario.developer.runLabel}
+            </button>
+            <BuildLink scenario={scenario} size="sm" className="demo-header-build" />
+          </>
+        ) : null}
       </nav>
     </header>
   );

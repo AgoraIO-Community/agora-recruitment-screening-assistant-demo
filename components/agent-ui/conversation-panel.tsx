@@ -31,6 +31,8 @@ export interface TranscriptMessage {
 export interface ConversationPanelProps {
   id: string;
   name?: string;
+  /** Shown while a connected session has no transcript yet. */
+  emptyText?: string;
   messages: TranscriptMessage[];
   pending: boolean;
 
@@ -65,6 +67,7 @@ function TranscriptScrollRestoration({
 export function ConversationPanel({
   id,
   name = 'IT Support Assistant',
+  emptyText = 'Describe your IT issue to get started.',
   messages,
   pending,
   voiceState = 'ready',
@@ -84,7 +87,7 @@ export function ConversationPanel({
             text:
               voiceState === 'connecting'
                 ? 'Connecting…'
-                : 'Describe your IT issue to get started.',
+                : emptyText,
           },
         ]
       : messages;

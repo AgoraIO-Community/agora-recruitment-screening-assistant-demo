@@ -74,6 +74,8 @@
 :root,
 :root.dark {
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Website controls use the technical corner. */
+  --radius: 2px;
   --action-fill: var(--primary);
   --action-hover: var(--primary-hover);
   --action-pressed: var(--primary-pressed);
