@@ -32,7 +32,7 @@ This first version is conversation-only. No business data lookup, external tools
 
 ## Start here
 
-Read [README](README.md) for setup and deployment, [architecture](ARCHITECTURE.md) for ownership, [the public recipe](RECIPE.md) and [verification guidance](AGENTS.md#verification-and-maintenance) for behavior and evidence boundaries.
+Read [README](README.md) for setup and deployment, [architecture](ARCHITECTURE.md) for ownership, [the design guide](DESIGN.md) before any change to JSX, styles, copy weight or action placement, [the public recipe](RECIPE.md) and [verification guidance](AGENTS.md#verification-and-maintenance) for behavior and evidence boundaries.
 
 Use Node.js 24 from .nvmrc and pnpm 9.15.9. Install with pnpm install --frozen-lockfile. Copy env.local.example to .env.local only when absent; preserve existing credentials. Run pnpm run doctor, pnpm run dev and pnpm run verify. Docker checks use pnpm run verify:docker separately.
 
@@ -57,7 +57,7 @@ Answer supported questions and continue useful advice after identifying one unav
 
 ## Public presentation ownership
 
-`lib/presentation.ts` owns the single public `name`, purpose and summary. It also owns the entry copy: `lead` (one sentence), `expectations` (a few words each), `sample` (a short static exchange) and `developer.buildLabel`. Show key features through the sample conversation: tag at most three Agent lines with a feature name instead of adding a feature list. Sample questions must come from `lib/scenario-knowledge.ts`; `pnpm run verify:scenario` checks this. Keep the entry page short: one heading, one sentence, the start action, the expectations line and the sample. Entry typography, boundaries and the primary action follow the Agora Website foundation and Basic controls in [shczhen/agent-ui](https://github.com/shczhen/agent-ui): hero type role, 2px technical corners, 13px labels and the signal-color primary action. The header and main heading both render that name; `app/layout.tsx` derives browser metadata from it. There is no separate headline field. Internal IDs stay available for diagnostics and configuration, without being rendered as public identity text.
+`lib/presentation.ts` owns the single public `name`, purpose and summary. It also owns the entry copy: `lead` (one sentence), `expectations` (a few words each), `sample` (a short static exchange) and `developer.buildLabel`. Show key features through the sample conversation: tag at most three Agent lines with a feature name instead of adding a feature list. Sample questions must come from `lib/scenario-knowledge.ts`; `pnpm run verify:scenario` checks this. Keep the entry page short: one heading, one sentence, the start action, the expectations line and the sample. [DESIGN.md](DESIGN.md) owns tokens, type roles, component rules and the list of views not yet aligned; follow its "Do not regress" list. Entry typography, boundaries and the primary action follow the Agora Website foundation and Basic controls in [shczhen/agent-ui](https://github.com/shczhen/agent-ui): hero type role, 2px technical corners, 13px labels and the signal-color primary action. The header and main heading both render that name; `app/layout.tsx` derives browser metadata from it. There is no separate headline field. Internal IDs stay available for diagnostics and configuration, without being rendered as public identity text.
 
 ## Verification and maintenance
 
