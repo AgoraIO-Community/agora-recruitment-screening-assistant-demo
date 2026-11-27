@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const git = (...args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim();
-const rootFiles = new Set(['package.json', 'pnpm-lock.yaml', 'env.local.example', 'README.md', 'README.zh-CN.md', 'README.ja.md', 'AGENTS.md', 'CLAUDE.md', 'ARCHITECTURE.md', 'RECIPE.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'Dockerfile', '.dockerignore', '.gitignore', '.gitattributes', '.npmrc', '.nvmrc', '.vercelignore', 'components.json', 'eslint.config.mjs', 'next.config.mjs', 'postcss.config.mjs', 'tsconfig.json', 'vercel.json']);
+const rootFiles = new Set(['package.json', 'pnpm-lock.yaml', 'env.local.example', 'README.md', 'README.zh-CN.md', 'README.ja.md', 'AGENTS.md', 'CLAUDE.md', 'ARCHITECTURE.md', 'DESIGN.md', 'RECIPE.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'Dockerfile', '.dockerignore', '.gitignore', '.gitattributes', '.npmrc', '.nvmrc', '.vercelignore', 'components.json', 'eslint.config.mjs', 'next.config.mjs', 'postcss.config.mjs', 'tsconfig.json', 'vercel.json']);
 const roots = new Set(['app', 'components', 'lib', 'types', 'styles', 'public', 'scripts']);
 const workflows = new Set(['.github/workflows/ci.yml', '.github/workflows/docker.yml']);
 

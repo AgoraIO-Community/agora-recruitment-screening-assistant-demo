@@ -13,7 +13,7 @@ const required = [
   'lib/runtime-profile.ts', 'types/agent-config.ts', 'types/presentation.ts',
   'THIRD_PARTY_NOTICES.md',
   'scripts/verify-signal-states.ts', 'scripts/verify-inspection.ts',
-  'README.md', 'RECIPE.md', 'AGENTS.md', 'ARCHITECTURE.md',
+  'README.md', 'RECIPE.md', 'AGENTS.md', 'ARCHITECTURE.md', 'DESIGN.md',
   'CLAUDE.md', 'LICENSE', '.gitignore', '.dockerignore', 'Dockerfile',
   '.github/workflows/ci.yml', '.github/workflows/docker.yml', 'env.local.example',
 

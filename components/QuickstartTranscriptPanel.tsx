@@ -32,6 +32,7 @@ export function QuickstartTranscriptPanel({
     <ConversationPanel
       id="scenario-transcript"
       name={getScenarioPresentation().name}
+      emptyText="Say you are ready to begin."
       pending={!!currentInProgressMessage}
       voiceState={state}
       hidden={hidden}
