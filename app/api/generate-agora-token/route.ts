@@ -3,9 +3,9 @@ import { RtcTokenBuilder, RtcRole } from 'agora-token';
 import { TOKEN_LIFETIME_SECONDS } from '@/lib/agora';
 
 function generateChannelName(): string {
-  const timestamp = Date.now();
+  const timestampSeconds = Math.floor(Date.now() / 1000);
   const random = Math.random().toString(36).substring(2, 8);
-  return `ai-conversation-${timestamp}-${random}`;
+  return `top10-recruitment-screening-${timestampSeconds}-${random}`;
 }
 
 export async function GET(request: NextRequest) {
